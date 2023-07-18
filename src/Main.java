@@ -1,8 +1,11 @@
-import java.util.*;
-import java.util.stream.Collector;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 public class Main {
 
@@ -50,12 +53,46 @@ public class Main {
       int bValue = B.get(i);
       beautifulPairs.addAll(calculatePairs(A, new Pair<>(i, bValue), beautifulMap));
     }
+    beautifulPairs = getOnlyDisjoinPairs(beautifulPairs);
+    int maxSize = beautifulPairs.size();
 
-    
+    for (int aValue : A) {
+      for (int i = 0; i < B.size(); i++) {
+        beautifulPairs.addAll(calculatePairs(A, new Pair<>(i, aValue), beautifulMap));
+        for (int j = 0; j < B.size(); j++) {
+          if (i==j) continue;
+
+          final Integer bValue = B.get(j);
+          beautifulPairs.addAll(calculatePairs(A, new Pair<>(j, bValue), beautifulMap));
+
+        }
+        beautifulPairs = getOnlyDisjoinPairs(beautifulPairs);
+        if (beautifulPairs.size() > maxSize) {
+          maxSize = beautifulPairs.size();
+        }
+        beautifulPairs.clear();
+      }
+    }
 
 
 
-    return beautifulPairs.size();
+    return maxSize;
+  }
+
+  private static List<Pair<Integer>> getOnlyDisjoinPairs(final List<Pair<Integer>> beautifulPairs) {
+    final Set<Integer> aIndexes = new HashSet<>();
+    final Set<Integer> bIndexes = new HashSet<>();
+
+    return beautifulPairs.stream()
+        .filter(integerPair -> {
+          if (aIndexes.contains(integerPair.a) || bIndexes.contains(integerPair.b)) {
+            return false;
+          }
+          aIndexes.add(integerPair.a);
+          bIndexes.add(integerPair.b);
+          return true;
+        })
+        .collect(Collectors.toList());
   }
 
   private static List<Pair<Integer>> calculatePairs(List<Integer> a, Pair<Integer> bPair, Map<Pair<Integer>, List<Pair<Integer>>> beautifulMap) {
@@ -74,26 +111,6 @@ public class Main {
     }
     beautifulMap.put(bPair, beautifulPairs);
     return beautifulPairs;
-  }
-
-  private static int calculateMaxDisjointSize(Map<Integer, List<Pair<Integer>>> beautifulMap) {
-
-    final Set<Integer> aIndexes = new HashSet<>();
-    final Set<Integer> bIndexes = new HashSet<>();
-    List<Pair<Integer>> disjointPairs = beautifulMap
-            .values()
-            .stream()
-            .flatMap(Collection::stream)
-            .filter(pair -> {
-              if (aIndexes.contains(pair.a) || bIndexes.contains(pair.b) || pair.b == null) {
-                return false;
-              }
-              aIndexes.add(pair.a);
-              bIndexes.add(pair.b);
-              return true;
-            })
-            .toList();
-    return disjointPairs.size();
   }
 
   static final class Pair<T> {
