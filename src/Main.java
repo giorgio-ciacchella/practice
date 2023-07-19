@@ -42,32 +42,57 @@ public class Main {
   public static int beautifulPairs(List<Integer> A, List<Integer> B) {
     // Write your code here
 
+    final HashMap<List<Integer>, Integer> beautifulMap = new HashMap<>();
+    final HashSet<Integer> aIndexes = new HashSet<>();
+    final HashSet<Integer> bIndexes = new HashSet<>();
+    List<Integer> bCopy = new ArrayList<>(B);
+    int maxSize = calculatePairs(A,B, beautifulMap, aIndexes, bIndexes);
 
+    for (int i = 0; i < B.size(); i++) {
+      int bValue = B.get(i);
+      for (int j = 0; j < A.size(); j++) {
+        int aValue = A.get(j);
+        if (aValue != bValue) {
+          bCopy.remove(i);
+          bCopy.add(i, aValue);
+          bIndexes.remove(i);
+          calculatePairs(A, bCopy.subList(0, i), beautifulMap, aIndexes, bIndexes);
+          final int newSize = calculatePairs(A, bCopy, beautifulMap, aIndexes, bIndexes);
+          if (newSize > maxSize) {
+            maxSize = newSize;
+          }
 
-
-    return calculatePairs(A,B, new HashMap<>());
-  }
-
-  private static int calculatePairs(List<Integer> a, List<Integer> b, Map<List<Integer>, Integer> beautifulMap) {
-
-//    if (beautifulMap.containsKey(b)) {
-//      return beautifulMap.get(b);
-//    }
-    Set<Integer> aIndexes = new HashSet<>();
-    Set<Integer> bIndexes = new HashSet<>();
-
-    int size = 0;
-
-    int bValue = b.get(b.size() - 1);
-    for (int i = 0; i < a.size(); i++) {
-      int aValue = a.get(i);
-      if (bValue == aValue) {
-        return 1;
+        }
       }
     }
+    return maxSize;
+  }
 
-//    beautifulMap.put(b, size);
-    return size;
+  private static int calculatePairs(List<Integer> a, List<Integer> b, Map<List<Integer>, Integer> beautifulMap, Set<Integer> aIndexes, Set<Integer> bIndexes) {
+
+    if (beautifulMap.containsKey(b)) {
+      return beautifulMap.get(b);
+    }
+    if (b.size() == 0) {
+      return 0;
+    }
+
+    final int bIndex = b.size() - 1;
+    int bValue = b.get(bIndex);
+    for (int i = 0; i < a.size(); i++) {
+      int aValue = a.get(i);
+      if (bValue == aValue && !aIndexes.contains(i) && !bIndexes.contains(bIndex)) {
+        aIndexes.add(i);
+        bIndexes.add(bIndex);
+        final int value =
+            1 + calculatePairs(a, b.subList(0, bIndex), beautifulMap, aIndexes, bIndexes);
+        beautifulMap.put(b, value);
+        return value;
+      }
+    }
+    final int calculation = calculatePairs(a, b.subList(0, bIndex), beautifulMap, aIndexes, bIndexes);
+    beautifulMap.put(b, calculation);
+    return calculation;
   }
 
 
