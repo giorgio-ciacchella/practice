@@ -2,109 +2,85 @@ import java.util.*;
 
 public class Main {
 
-  /**
-   *     0 1 2  3 4 5
-   * A = 3 5 7 11 5 8
-   * B = 5 7 11 10 5 8
-   * <p>
-   * BS = [(1,0)(1,4)(2,1)(3,2)(4,0)(4,4)(5,5)]
-   * Disjoint = [(2,1)(3,2)(5,5)]
-   * <p>
-   * <p>
-   *
-   *
-   *
-   * {
-   *     3: [[0]],
-   *     5: [[1,0], [4,0], [1,4], [4,4]],
-   *     7: [[2,1]],
-   *     11: [[3,2]],
-   *     8: [[5,5]]
-   * }
-   *
-   *    A = 3 5 7 11 5 8
-   *    B = 3 7 11 10 5 8
-   *
-   *
-   * {
-   *    3: [[0,0]],
-   *    5: [[1,4], [4,4]],
-   *    7: [[2,1]],
-   *    11: [[3,2]],
-   *    8: [[5,5]]
-   * }
-   *
-       *      0 1 2  3 4 5
-   *    * A = 3 5 7 11 5 8
-   *    * B = 5 7 11 3 5 8
-   */
+  public static class TreeNode {
+    int val;
+    TreeNode left;
+    TreeNode right;
 
-  public static int beautifulPairs(List<Integer> A, List<Integer> B) {
-    // Write your code here
+    TreeNode() {}
 
-    final HashMap<List<Integer>, Map<Integer, Set<Integer>>> beautifulMap = new HashMap<>();
-    List<Integer> bCopy = new ArrayList<>(B);
-    final Map<Integer, Set<Integer>> integerSetMap = calculatePairs(A, B, beautifulMap);
-
-    for (int i = 0; i < B.size(); i++) {
-      int bValue = B.get(i);
-      for (int j = 0; j < A.size(); j++) {
-        int aValue = A.get(j);
-        if (aValue != bValue) {
-          bCopy.remove(i);
-          bCopy.add(i, aValue);
-          calculatePairs(A, bCopy.subList(0, i), beautifulMap, aIndexes, bIndexes);
-          final int newSize = calculatePairs(A, bCopy, beautifulMap, aIndexes, bIndexes);
-          if (newSize > maxSize) {
-            maxSize = newSize;
-          }
-
-        }
-      }
+    TreeNode(int val) {
+      this.val = val;
     }
-    return maxSize;
+
+    TreeNode(int val, TreeNode left, TreeNode right) {
+      this.val = val;
+      this.left = left;
+      this.right = right;
+    }
+  }
+  public static TreeNode invertTree(TreeNode root) {
+    TreeNode newHead = new TreeNode(root.val);
+    Queue<TreeNode> nodesToTraverse = new ArrayDeque<>();
+    nodesToTraverse.add(newHead);
+    nodesToTraverse.add(root.right);
+    nodesToTraverse.add(root.left);
+
+
+    while (!nodesToTraverse.isEmpty()) {
+      TreeNode currentNode = nodesToTraverse.poll();
+      TreeNode nodeToAdd = nodesToTraverse.poll();
+      currentNode.left = nodeToAdd;
+      if (nodeToAdd.right != null ) {
+        
+      }
+      nodeToAdd = nodesToTraverse.poll();
+      currentNode.right = nodeToAdd;
+    }
+
+
+    return null;
   }
 
-  private static Map<Integer, Set<Integer>> calculatePairs(List<Integer> a, List<Integer> b, Map<List<Integer>, Map<Integer, Set<Integer>>> beautifulMap) {
+  public static TreeNode invertTree2(TreeNode root, TreeNode newRoot) {
 
-    if (beautifulMap.containsKey(b)) {
-      return beautifulMap.get(b);
-    }
-    if (b.size() == 0) {
-      return Map.of();
-    }
 
-    final int bIndex = b.size() - 1;
-    int bValue = b.get(bIndex);
-    for (int i = 0; i < a.size(); i++) {
-      int aValue = a.get(i);
-      if (bValue == aValue) {
-        final Map<Integer, Set<Integer>> partialPairMap = calculatePairs(a, b.subList(0, bIndex),
-            beautifulMap);
-        final int finalI = i;
-        final Boolean isPairPresent = Optional.ofNullable(partialPairMap.get(bIndex))
-            .map(set -> set.contains(finalI))
-            .orElse(false);
-        if (!isPairPresent) {
-          partialPairMap.computeIfPresent(bIndex, (integer,integers) -> {
-            integers.add(finalI);
-            return integers;
-          });
-        }
-        beautifulMap.put(b, partialPairMap);
-        return partialPairMap;
-      }
-    }
-    final Map<Integer, Set<Integer>> calculatePairs = calculatePairs(a, b.subList(0, bIndex),
-        beautifulMap);
-    beautifulMap.put(b, calculatePairs);
-    return calculatePairs;
+    newRoot.right = invertTree2(root.left, new TreeNode(root.left.val));
+    newRoot.left = invertTree2(root.right, new TreeNode(root.right.val));
+
+    return newRoot;
   }
 
+  public static TreeNode constructTree(int array [], int i) {
 
+    if (i >= array.length) {
+      return null;
+    }
 
+    return new TreeNode(array[i], constructTree(array, 2 * i + 1), constructTree(array, 2 * i + 2));
+
+  }
 
   public static void main(String[] args) {
-    System.out.println(beautifulPairs(List.of(3, 5, 7, 11, 5, 8), List.of(5, 7, 11, 10, 5, 8)));
+    final TreeNode treeNode = constructTree(new int[]{4, 2, 7, 1, 3, 6, 9}, 0);
+    final TreeNode treeNode1 = invertTree2(treeNode, new TreeNode(treeNode.val));
+    printTree(treeNode1);
   }
+
+  private static void printTree(final TreeNode treeNode1) {
+    Queue<TreeNode> nodesToPrint = new ArrayDeque<>();
+    nodesToPrint.add(treeNode1);
+
+    while(!nodesToPrint.isEmpty()) {
+      final TreeNode currentNode = nodesToPrint.poll();
+      System.out.println(currentNode.val);
+      if (currentNode.left != null) {
+        nodesToPrint.add(currentNode.left);
+      }
+      if (currentNode.right != null) {
+        nodesToPrint.add(currentNode.right);
+      }
+    }
+  }
+
 }
